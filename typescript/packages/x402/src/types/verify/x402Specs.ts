@@ -19,6 +19,7 @@ export const ErrorReasons = [
   "invalid_exact_evm_payload_authorization_value",
   "invalid_exact_evm_payload_signature",
   "invalid_exact_evm_payload_recipient_mismatch",
+  "invalid_exact_kvm_payload_signature",
   "invalid_exact_svm_payload_transaction",
   "invalid_exact_svm_payload_transaction_amount_mismatch",
   "invalid_exact_svm_payload_transaction_create_ata_instruction",
@@ -96,6 +97,12 @@ export const ExactEvmPayloadSchema = z.object({
 });
 export type ExactEvmPayload = z.infer<typeof ExactEvmPayloadSchema>;
 
+// x402ExactKvmPayload
+export const ExactKvmPayloadSchema = z.object({
+  transaction: z.string().regex(Base64EncodedRegex),
+});
+export type ExactKvmPayload = z.infer<typeof ExactKvmPayloadSchema>;
+
 // x402ExactSvmPayload
 export const ExactSvmPayloadSchema = z.object({
   transaction: z.string().regex(Base64EncodedRegex),
@@ -107,7 +114,7 @@ export const PaymentPayloadSchema = z.object({
   x402Version: z.number().refine(val => x402Versions.includes(val as 1)),
   scheme: z.enum(schemes),
   network: NetworkSchema,
-  payload: z.union([ExactEvmPayloadSchema, ExactSvmPayloadSchema]),
+  payload: z.union([ExactEvmPayloadSchema, ExactKvmPayloadSchema, ExactSvmPayloadSchema]),
 });
 export type PaymentPayload = z.infer<typeof PaymentPayloadSchema>;
 export type UnsignedPaymentPayload = Omit<PaymentPayload, "payload"> & {

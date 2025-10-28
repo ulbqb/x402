@@ -1,11 +1,12 @@
 import * as evm from "./evm/wallet";
+import * as kvm from "./kvm/wallet";
 import * as svm from "../../shared/svm/wallet";
-import { SupportedEVMNetworks, SupportedSVMNetworks } from "./network";
+import { SupportedEVMNetworks, SupportedKVMNetworks, SupportedSVMNetworks } from "./network";
 import { Hex } from "viem";
 
-export type ConnectedClient = evm.ConnectedClient | svm.SvmConnectedClient;
-export type Signer = evm.EvmSigner | svm.SvmSigner;
-export type MultiNetworkSigner = { evm: evm.EvmSigner; svm: svm.SvmSigner };
+export type ConnectedClient = evm.ConnectedClient | svm.SvmConnectedClient | kvm.ConnectedClient;
+export type Signer = evm.EvmSigner | svm.SvmSigner | kvm.KvmSigner;
+export type MultiNetworkSigner = { evm: evm.EvmSigner; svm: svm.SvmSigner; kvm: kvm.KvmSigner };
 
 /**
  * Creates a public client configured for the specified network.
@@ -16,6 +17,10 @@ export type MultiNetworkSigner = { evm: evm.EvmSigner; svm: svm.SvmSigner };
 export function createConnectedClient(network: string): ConnectedClient {
   if (SupportedEVMNetworks.find(n => n === network)) {
     return evm.createConnectedClient(network);
+  }
+
+  if (SupportedKVMNetworks.find(n => n === network)) {
+    return kvm.createConnectedClient(network);
   }
 
   if (SupportedSVMNetworks.find(n => n === network)) {
@@ -38,6 +43,11 @@ export function createSigner(network: string, privateKey: Hex | string): Promise
     return Promise.resolve(evm.createSigner(network, privateKey as Hex));
   }
 
+  // kvm
+  if (SupportedKVMNetworks.find(n => n === network)) {
+    return Promise.resolve(kvm.createSigner(network, privateKey as Hex));
+  }
+
   // svm
   if (SupportedSVMNetworks.find(n => n === network)) {
     return svm.createSignerFromBase58(privateKey as string);
@@ -57,6 +67,16 @@ export function isEvmSignerWallet(wallet: Signer): wallet is evm.EvmSigner {
 }
 
 /**
+ * Checks if the given wallet is an EVM signer wallet.
+ *
+ * @param wallet - The object wallet to check.
+ * @returns True if the wallet is an EVM signer wallet, false otherwise.
+ */
+export function isKvmSignerWallet(wallet: Signer): wallet is kvm.KvmSigner {
+  return kvm.isSignerWallet(wallet as kvm.KvmSigner) || kvm.isAccount(wallet as kvm.KvmSigner);
+}
+
+/**
  * Checks if the given wallet is an SVM signer wallet
  *
  * @param wallet - The object wallet to check
@@ -73,5 +93,5 @@ export function isSvmSignerWallet(wallet: Signer): wallet is svm.SvmSigner {
  * @returns True if the wallet is a multi network signer wallet, false otherwise
  */
 export function isMultiNetworkSigner(wallet: object): wallet is MultiNetworkSigner {
-  return "evm" in wallet && "svm" in wallet;
+  return "evm" in wallet && "svm" in wallet && "kvm" in wallet;
 }

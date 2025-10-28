@@ -1,6 +1,17 @@
 import { createPaymentHeader as createPaymentHeaderExactEVM } from "../schemes/exact/evm/client";
+import { createPaymentHeader as createPaymentHeaderExactKVM } from "../schemes/exact/kvm/client";
 import { createPaymentHeader as createPaymentHeaderExactSVM } from "../schemes/exact/svm/client";
-import { isEvmSignerWallet, isMultiNetworkSigner, isSvmSignerWallet, MultiNetworkSigner, Signer, SupportedEVMNetworks, SupportedSVMNetworks } from "../types/shared";
+import {
+  isEvmSignerWallet,
+  isKvmSignerWallet,
+  isMultiNetworkSigner,
+  isSvmSignerWallet,
+  MultiNetworkSigner,
+  Signer,
+  SupportedEVMNetworks,
+  SupportedKVMNetworks,
+  SupportedSVMNetworks,
+} from "../types/shared";
 import { PaymentRequirements } from "../types/verify";
 import { X402Config } from "../types/config";
 
@@ -29,11 +40,16 @@ export async function createPaymentHeader(
         throw new Error("Invalid evm wallet client provided");
       }
 
-      return await createPaymentHeaderExactEVM(
-        evmClient,
-        x402Version,
-        paymentRequirements,
-      );
+      return await createPaymentHeaderExactEVM(evmClient, x402Version, paymentRequirements);
+    }
+    // kvm
+    if (SupportedKVMNetworks.includes(paymentRequirements.network)) {
+      const kvmClient = isMultiNetworkSigner(client) ? client.kvm : client;
+      if (!isKvmSignerWallet(kvmClient)) {
+        throw new Error("Invalid kvm wallet client provided");
+      }
+
+      return await createPaymentHeaderExactKVM(kvmClient, x402Version, paymentRequirements);
     }
     // svm
     if (SupportedSVMNetworks.includes(paymentRequirements.network)) {
@@ -42,12 +58,7 @@ export async function createPaymentHeader(
         throw new Error("Invalid svm wallet client provided");
       }
 
-      return await createPaymentHeaderExactSVM(
-        svmClient,
-        x402Version,
-        paymentRequirements,
-        config,
-      );
+      return await createPaymentHeaderExactSVM(svmClient, x402Version, paymentRequirements, config);
     }
     throw new Error("Unsupported network");
   }

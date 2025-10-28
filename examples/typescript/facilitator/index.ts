@@ -10,6 +10,7 @@ import {
   createConnectedClient,
   createSigner,
   SupportedEVMNetworks,
+  SupportedKVMNetworks,
   SupportedSVMNetworks,
   Signer,
   ConnectedClient,
@@ -21,10 +22,11 @@ import {
 config();
 
 const EVM_PRIVATE_KEY = process.env.EVM_PRIVATE_KEY || "";
+const KVM_PRIVATE_KEY = process.env.KVM_PRIVATE_KEY || "";
 const SVM_PRIVATE_KEY = process.env.SVM_PRIVATE_KEY || "";
 const SVM_RPC_URL = process.env.SVM_RPC_URL || "";
 
-if (!EVM_PRIVATE_KEY && !SVM_PRIVATE_KEY) {
+if (!EVM_PRIVATE_KEY && !KVM_PRIVATE_KEY && !SVM_PRIVATE_KEY) {
   console.error("Missing required environment variables");
   process.exit(1);
 }
@@ -70,6 +72,8 @@ app.post("/verify", async (req: Request, res: Response) => {
     // svm verify requires a Signer because it signs & simulates the txn
     let client: Signer | ConnectedClient;
     if (SupportedEVMNetworks.includes(paymentRequirements.network)) {
+      client = createConnectedClient(paymentRequirements.network);
+    } else if (SupportedKVMNetworks.includes(paymentRequirements.network)) {
       client = createConnectedClient(paymentRequirements.network);
     } else if (SupportedSVMNetworks.includes(paymentRequirements.network)) {
       client = await createSigner(paymentRequirements.network, SVM_PRIVATE_KEY);
@@ -138,6 +142,8 @@ app.post("/settle", async (req: Request, res: Response) => {
     let signer: Signer;
     if (SupportedEVMNetworks.includes(paymentRequirements.network)) {
       signer = await createSigner(paymentRequirements.network, EVM_PRIVATE_KEY);
+    } else if (SupportedKVMNetworks.includes(paymentRequirements.network)) {
+      signer = await createSigner(paymentRequirements.network, KVM_PRIVATE_KEY);
     } else if (SupportedSVMNetworks.includes(paymentRequirements.network)) {
       signer = await createSigner(paymentRequirements.network, SVM_PRIVATE_KEY);
     } else {

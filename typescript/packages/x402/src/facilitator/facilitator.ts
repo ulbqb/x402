@@ -1,11 +1,16 @@
 import { verify as verifyExactEvm, settle as settleExactEvm } from "../schemes/exact/evm";
+import { verify as verifyExactKvm, settle as settleExactKvm } from "../schemes/exact/kvm";
 import { verify as verifyExactSvm, settle as settleExactSvm } from "../schemes/exact/svm";
-import { SupportedEVMNetworks, SupportedSVMNetworks } from "../types/shared";
+import { SupportedEVMNetworks, SupportedSVMNetworks, SupportedKVMNetworks } from "../types/shared";
 import { X402Config } from "../types/config";
 import {
   ConnectedClient as EvmConnectedClient,
   SignerWallet as EvmSignerWallet,
 } from "../types/shared/evm";
+import {
+  ConnectedClient as KvmConnectedClient,
+  SignerWallet as KvmSignerWallet,
+} from "../types/shared/kvm";
 import { ConnectedClient, Signer } from "../types/shared/wallet";
 import {
   PaymentPayload,
@@ -46,6 +51,11 @@ export async function verify<
         payload,
         paymentRequirements,
       );
+    }
+
+    // kvm
+    if (SupportedKVMNetworks.includes(paymentRequirements.network)) {
+      return verifyExactKvm(client as KvmConnectedClient, payload, paymentRequirements);
     }
 
     // svm
@@ -89,6 +99,11 @@ export async function settle<transport extends Transport, chain extends Chain>(
         payload,
         paymentRequirements,
       );
+    }
+
+    // kvm
+    if (SupportedKVMNetworks.includes(paymentRequirements.network)) {
+      return await settleExactKvm(client as KvmSignerWallet, payload, paymentRequirements);
     }
 
     // svm

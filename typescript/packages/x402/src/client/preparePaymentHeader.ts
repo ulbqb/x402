@@ -1,6 +1,7 @@
 import { Address } from "viem";
 import { preparePaymentHeader as preparePaymentHeaderExactEVM } from "../schemes/exact/evm/client";
-import { SupportedEVMNetworks } from "../types/shared";
+import { preparePaymentHeader as preparePaymentHeaderExactKVM } from "../schemes/exact/kvm/client";
+import { SupportedEVMNetworks, SupportedKVMNetworks } from "../types/shared";
 import { PaymentRequirements, UnsignedPaymentPayload } from "../types/verify";
 
 /**
@@ -21,6 +22,13 @@ export function preparePaymentHeader(
     SupportedEVMNetworks.includes(paymentRequirements.network)
   ) {
     return preparePaymentHeaderExactEVM(from, x402Version, paymentRequirements);
+  }
+
+  if (
+    paymentRequirements.scheme === "exact" &&
+    SupportedKVMNetworks.includes(paymentRequirements.network)
+  ) {
+    return preparePaymentHeaderExactKVM(from, x402Version, paymentRequirements);
   }
 
   throw new Error("Unsupported scheme");

@@ -21,6 +21,7 @@ import {
   RoutesConfig,
   settleResponseHeader,
   SupportedEVMNetworks,
+  SupportedKVMNetworks,
   SupportedSVMNetworks,
 } from "x402/types";
 import { useFacilitator } from "x402/verify";
@@ -142,6 +143,31 @@ export function paymentMiddleware(
           output: outputSchema,
         },
         extra: (asset as ERC20TokenAmount["asset"]).eip712,
+      });
+    }
+
+    // evm networks
+    else if (SupportedKVMNetworks.includes(network)) {
+      paymentRequirements.push({
+        scheme: "exact",
+        network,
+        maxAmountRequired,
+        resource: resourceUrl,
+        description: description ?? "",
+        mimeType: mimeType ?? "",
+        payTo: getAddress(payTo),
+        maxTimeoutSeconds: maxTimeoutSeconds ?? 60,
+        asset: getAddress(asset.address),
+        // TODO: Rename outputSchema to requestStructure
+        outputSchema: {
+          input: {
+            type: "http",
+            method: req.method.toUpperCase(),
+            discoverable: discoverable ?? true,
+            ...inputSchema,
+          },
+          output: outputSchema,
+        },
       });
     }
 
