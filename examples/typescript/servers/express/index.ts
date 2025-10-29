@@ -19,10 +19,21 @@ app.use(
     {
       "GET /weather": {
         // USDC amount in dollars
-        price: "$0.001",
+        price: {
+          amount: "1",
+          asset: {
+            address: "0xd077a400968890eacc75cdc901f0356c943e4fdb",
+            decimals: 6,
+            // omit eip712 for Solana
+            eip712: {
+              name: "Tether USD",
+              version: "1",
+            },
+          },
+        },
         // network: "base" // uncomment for Base mainnet
         // network: "solana" // uncomment for Solana mainnet
-        network: "base-sepolia",
+        network: "kairos",
       },
       "/premium/*": {
         // Define atomic amounts in any EIP-3009 token
