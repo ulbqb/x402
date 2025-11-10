@@ -18,11 +18,18 @@ app.use(
     payTo,
     {
       "GET /weather": {
-        // USDC amount in dollars
-        price: "$0.001",
-        // network: "base" // uncomment for Base mainnet
-        // network: "solana" // uncomment for Solana mainnet
-        network: "base-sepolia",
+        price: {
+          amount: "100000",
+          asset: {
+            address: "0xE7C3D8C9a439feDe00D2600032D5dB0Be71C3c29",
+            decimals: 18,
+            eip712: {
+              name: "JPY Coin",
+              version: "1",
+            },
+          },
+        },
+        network: "polygon-amoy",
       },
       "/premium/*": {
         // Define atomic amounts in any EIP-3009 token
